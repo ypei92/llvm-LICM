@@ -23,7 +23,7 @@
 using namespace llvm;
 
 #define DEBUG_TYPE "simple-licm"
-
+  
 STATISTIC(LoopCounter, "Counts number of loops greeted");
 
 namespace {
