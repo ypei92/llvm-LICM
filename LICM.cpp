@@ -81,6 +81,14 @@ namespace {
             BasicBlock* funcblock = L->getHeader();
             Function* F = funcblock->getParent();
 
+            // DominatorTree 
+            DominatorTreeWrapperPass *DTWP = getAnalysisIfAvailable<DominatorTreeWrapperPass>();
+            DominatorTree *DT = DTWP ? &DTWP->getDomTree() : nullptr;
+            LoopInfoWrapperPass *LIWP = getAnalysisIfAvailable<LoopInfoWrapperPass>();
+            LoopInfo *LI = LIWP ? &LIWP->getLoopInfo() : nullptr;
+            errs() << "!!!!!!!!DT: " << DT->compare(*DT) << "\n"
+                   << "!!!!!!!!LI: " << LI->empty() << "\n";
+
 /*----------------------------DEPTH--------------------------------*/
 
             int depth = 0;
@@ -112,6 +120,7 @@ namespace {
             return false;
         }
 
+        // void getAnalysisUsage(AnalysisUsage &AU) const override {
         virtual void getAnalysisUsage(AnalysisUsage &AU) const {
             AU.setPreservesCFG();
             AU.addRequiredID(LoopSimplifyID);
