@@ -71,8 +71,30 @@ namespace {
             LoopNode tmp(BBs,instrs,atomics,branches);
             return tmp;
         }
+        void get_preorder(DorminatorTree *DT,DomTreeNrdeBase< BasicBlock > * parent)
+        {
+            DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
+            BasicBlock* root_BB = root->getBlock();
+            BasicBlock* parent_BB = parent.getBlock();
+            if(!DT->domimates(root_BB, parent_BB) return;
+            
+            bool immediateBB = true;
 
+            
+            if(immediateBB){
+                for(each instruction I in BB){
+                    if(isLoopInvariant(I) && safeToHoist(I))
+                        move I to pre-header basic block;
+                }
+            }
+
+
+
+            for(auto children : parent->getChildren())
+                preorder(children);            
+        }
         bool runOnLoop(Loop *L, LPPassManager &LPM) override {
+            return NodeList;
 
             Loop *tmpLoop;
             unsigned int i = 0;
@@ -89,6 +111,11 @@ namespace {
             errs() << "!!!!!!!!DT: " << DT->compare(*DT) << "\n"
                    << "!!!!!!!!LI: " << LI->empty() << "\n";
 
+            
+            BasicBlock* Header = L->getHeader();
+
+            get_preorder(root);
+        
 /*----------------------------DEPTH--------------------------------*/
 
             int depth = 0;
