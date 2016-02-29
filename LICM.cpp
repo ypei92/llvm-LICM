@@ -16,9 +16,11 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Dominators.h"
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Transforms/Scalar.h"
 #include <map>
 using namespace llvm;
 
@@ -110,11 +112,11 @@ namespace {
             return false;
         }
 
-        void getAnalysisUsage(AnalysisUsage &AU) const override {
-            AU.setPreservesAll();
-            // AU.addRequiredID(LoopSimplifyID);
-            // AU.addRequired<LoopInfoWrapperPass>();
-            // AU.addRequired<DominatorTreeWrapperPass>();
+        virtual void getAnalysisUsage(AnalysisUsage &AU) const {
+            AU.setPreservesCFG();
+            AU.addRequiredID(LoopSimplifyID);
+            AU.addRequired<LoopInfoWrapperPass>();
+            AU.addRequired<DominatorTreeWrapperPass>();
         }
     };
 }
