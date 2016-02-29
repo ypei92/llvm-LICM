@@ -22,15 +22,15 @@
 #include <map>
 using namespace llvm;
 
-#define DEBUG_TYPE "loop-props"
+#define DEBUG_TYPE "simple-licm"
 
 STATISTIC(LoopCounter, "Counts number of loops greeted");
 
 namespace {
 
-    struct YourLoopAnalysis : public LoopPass {
+    struct YourLICM : public LoopPass {
         static char ID; // Pass identification, replacement for typeid
-        YourLoopAnalysis() : LoopPass(ID) {}
+        YourLICM() : LoopPass(ID) {}
 
         struct LoopNode {
             int num_bbs;
@@ -112,9 +112,12 @@ namespace {
 
         void getAnalysisUsage(AnalysisUsage &AU) const override {
             AU.setPreservesAll();
+            // AU.addRequiredID(LoopSimplifyID);
+            // AU.addRequired<LoopInfoWrapperPass>();
+            // AU.addRequired<DominatorTreeWrapperPass>();
         }
     };
 }
 
-char YourLoopAnalysis::ID = 0;
-static RegisterPass<YourLoopAnalysis> X("loop-props", "LoopAnalysis pass from F&M");
+char YourLICM::ID = 0;
+static RegisterPass<YourLICM> X("simple-licm", "LICM implemented by F&M");
