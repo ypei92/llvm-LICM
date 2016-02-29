@@ -21,7 +21,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include <map>
 using namespace llvm;
-
+  
 #define DEBUG_TYPE "loop-props"
 
 STATISTIC(LoopCounter, "Counts number of loops greeted");
