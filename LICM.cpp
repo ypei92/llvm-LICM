@@ -75,7 +75,9 @@ namespace {
 
         bool isLoopInvariant(Instruction &I , Loop *L) {
 
-            errs() << " Michael Happy Birthday !" << "\n" ;
+            errs() << " isloopinvariant:";
+            I.print(errs());
+            errs()<<"\n";
             bool case1 = ( I.isBinaryOp() || I.isShift() ||
                            I.isCast() || I.getOpcode() == Instruction::Select ||
                            I.getOpcode() == Instruction::GetElementPtr );
@@ -88,7 +90,9 @@ namespace {
         bool safeToHoist(Instruction &I , Loop *L , DominatorTree *DT) {
             unsigned int i = 0;
             
-            errs() << " Michael Happy Birthday2 !" << "\n" ;
+            errs() << " safetohoist:" ;
+            I.print(errs());
+            errs()<<"\n";
             bool case1 = llvm::isSafeToSpeculativelyExecute(&I);
             if (case1)
                 return true;
@@ -110,45 +114,67 @@ namespace {
         {
             // DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
             // BasicBlock* root_BB = root->getBlock();
+            errs()<<"new block\n";
             BasicBlock* parent_BB = parent->getBlock();
-            
             BasicBlock* header = L->getHeader();
-            if(!(DT->dominates(header, parent_BB))) return;
-
-            bool inSubLoop = false, outofLoop = true;
-            for(auto subLoop : L->getSubLoops())
+            //errs()<< (header == parent_BB) << (header == header)<<'\n'; 
+            Instruction &first_parent = parent_BB->front();
+            Instruction &first_header = header->front();
+            //first_parent.print(errs());
+            //errs()<<'\n';
+            //first_header.print(errs());
+            //errs()<<'\n';
+            
+            if(DT->dominates(header, parent_BB)) 
             {
-                for(auto BB : subLoop->getBlocks())
+                bool inSubLoop = false, outofLoop = true;
+                for(auto subLoop : L->getSubLoops())
                 {
-                    if(parent_BB == BB)
+                    for(auto BB : subLoop->getBlocks())
                     {
-                        inSubLoop = true;
-                        break;
+                        if(parent_BB == BB)
+                        {
+                            inSubLoop = true;
+                            break;
+                        }
                     }
                 }
-            }
-            for(auto BB : L->getBlocks())
-            {
-                if(BB == parent_BB)
-                    outofLoop = false;
-            }
-            bool immediateBB = !(inSubLoop || outofLoop);
-            
-            if(immediateBB){
-                for(auto & I : parent_BB->getInstList()){
-                    if(isLoopInvariant(I, L) && safeToHoist(I, L, DT))  
-                    {
-                        I.removeFromParent();
+                for(auto BB : L->getBlocks())
+                {
+                    if(BB == parent_BB)
+                        outofLoop = false;
+                }
+                bool immediateBB = !(inSubLoop || outofLoop);
+                if(immediateBB){
+                    auto I = parent_BB->getInstList().begin();
+
+                    Instruction* pI;
+                    while(I != parent_BB->getInstList().end()){
+                        pI = &*(I++);
+                        pI->print(errs());
+                        errs()<<'\n';
+                        if(I != parent_BB->getInstList().end())
+                            I->print(errs());
+                        errs()<<'\n';
+                        if(isLoopInvariant(*pI, L) && safeToHoist(*pI, L, DT))  
+                        {
+                            errs()<<"1\n";
                         
-                        BasicBlock* PreHeader = L->getLoopPreheader();
-                        PreHeader->getInstList().push_back(&I);
+                            errs()<<"2\n";
+                            BasicBlock* PreHeader = L->getLoopPreheader();
+                            errs()<<"3\n";
+                            pI->moveBefore(PreHeader->getTerminator());
+                        }
                     }
                 }
             }
-            
+
 
             for(auto child : parent->getChildren())
+            {
+                errs()<<"has children\n";
                 get_preorder(L,  DT , child );
+            }
         }
 
         bool runOnLoop(Loop *L, LPPassManager &LPM) override {
@@ -171,7 +197,7 @@ namespace {
 
             errs() << "!!!!!!!!DT: " << root->getNumChildren() << "\n"
                    << "!!!!!!!!LI: " << LI->empty() << "\n";
-            
+             
             get_preorder(L,  DT , root );
         
 
