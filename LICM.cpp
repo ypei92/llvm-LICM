@@ -73,10 +73,12 @@ namespace {
             return tmp;
         }
 
+        bool isLoopInvariant(Instruction I, Loop *L);
+        bool safeToHoist(Instruction I , Loop *L , DominatorTree *DT); 
         void get_preorder(Loop* L, DominatorTree *DT,DomTreeNodeBase< BasicBlock > * parent)
         {
-            DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
-            BasicBlock* root_BB = root->getBlock();
+            // DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
+            // BasicBlock* root_BB = root->getBlock();
             BasicBlock* parent_BB = parent->getBlock();
             
             BasicBlock* header = L->getHeader();
@@ -103,7 +105,7 @@ namespace {
             
             if(immediateBB){
                 for(auto & I : parent_BB->getInstList()){
-                    if(1)//isLoopInvariant(I, L) && safeToHoist(I, L, DT))   {
+                    if(isLoopInvariant(I, L) && safeToHoist(I, L, DT))   {
                     {
                         I.removeFromParent();
                         
@@ -120,6 +122,7 @@ namespace {
 
         bool isLoopInvariant(Instruction I , Loop *L) {
 
+            errs() << " Michael Happy Birthday !" << "\n" ;
             bool case1 = ( I.isBinaryOp() || I.isShift() ||
                            I.isCast() || I.getOpcode() == Instruction::Select ||
                            I.getOpcode() == Instruction::GetElementPtr );
@@ -130,8 +133,9 @@ namespace {
         }
 
         bool safeToHoist(Instruction I , Loop *L , DominatorTree *DT) {
-            int i = 0;
-
+            unsigned int i = 0;
+            
+            errs() << " Michael Happy Birthday2 !" << "\n" ;
             bool case1 = llvm::isSafeToSpeculativelyExecute(&I);
             if (case1)
                 return true;
@@ -172,6 +176,7 @@ namespace {
             
             get_preorder(L,  DT , root );
         
+
 /*----------------------------DEPTH--------------------------------*/
 
             int depth = 0;
@@ -200,7 +205,9 @@ namespace {
                    << ", atomics=" << loopdata.num_atomics
                    << ", branches=" << loopdata.num_branches
                    << "\n" ;
-            return false;
+
+            return true;
+
         }
 
         // void getAnalysisUsage(AnalysisUsage &AU) const override {
