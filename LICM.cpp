@@ -19,7 +19,6 @@
 #include "llvm/IR/Dominators.h"
 #include "llvm/Analysis/ValueTracking.h"
 #include "llvm/Analysis/LoopPass.h"
-#include "SmallVector.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar.h"
@@ -125,7 +124,7 @@ namespace {
                            I.isCast() || I.getOpcode() == Instruction::Select ||
                            I.getOpcode() == Instruction::GetElementPtr );
 
-            bool case2 = L->hasLoopInvariantOperands(I);
+            bool case2 = L->hasLoopInvariantOperands(&I);
 
             return case1 && case2;
         }
@@ -133,15 +132,15 @@ namespace {
         bool safeToHoist(Instruction I , Loop *L , DominatorTree *DT) {
             int i = 0;
 
-            bool case1 = llvm::isSafeToSpeculativelyExecute(&*I);
+            bool case1 = llvm::isSafeToSpeculativelyExecute(&I);
             if (case1)
                 return true;
 
             bool case2 = true;
-            SmallVectorImpl<BasicBlocks> ExitBlocks;
-            L->getExitBlocks(&ExitBlocks);
+            SmallVector<BasicBlock*, 0> ExitBlocks;
+            L->getExitBlocks(ExitBlocks);
             for ( i = 0 ; i < ExitBlocks.size() ; i ++) {
-                if (! DT->dominates(I, ExitBlocks[i])) {
+                if (! DT->dominates(&I, ExitBlocks[i])) {
                     case2 = false;
                     break;
                 }
