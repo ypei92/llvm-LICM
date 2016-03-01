@@ -74,27 +74,49 @@ namespace {
             return tmp;
         }
 
-        void get_preorder(DorminatorTree *DT,DomTreeNodeBase< BasicBlock > * parent)
+        void get_preorder(Loop* L, DominatorTree *DT,DomTreeNodeBase< BasicBlock > * parent)
         {
             DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
             BasicBlock* root_BB = root->getBlock();
-            BasicBlock* parent_BB = parent.getBlock();
-            if(!DT->dominates(root_BB, parent_BB) return;
-
-            /* 
-            bool immediateBB = true;
-
+            BasicBlock* parent_BB = parent->getBlock();
             
-            if(immediateBB){
-                for(each instruction I in BB){
-                    if(isLoopInvariant(I) && safeToHoist(I))
-                        move I to pre-header basic block;
+            BasicBlock* header = L->getHeader();
+            if(!(DT->dominates(header, parent_BB))) return;
+
+            bool inSubLoop = false, outofLoop = true;
+            for(auto subLoop : L->getSubLoops())
+            {
+                for(auto BB : subLoop->getBlocks())
+                {
+                    if(parent_BB == BB)
+                    {
+                        inSubLoop = true;
+                        break;
+                    }
                 }
             }
-            */
+            for(auto BB : L->getBlocks())
+            {
+                if(BB == parent_BB)
+                    outofLoop = false;
+            }
+            bool immediateBB = !(inSubLoop || outofLoop);
+            
+            if(immediateBB){
+                for(auto & I : parent_BB->getInstList()){
+                    if(1)//isLoopInvariant(I, L) && safeToHoist(I, L, DT))   {
+                    {
+                        I.removeFromParent();
+                        
+                        BasicBlock* PreHeader = L->getLoopPreheader();
+                        PreHeader->getInstList().push_back(&I);
+                    }
+                }
+            }
+            
 
-            for(auto children : parent->getChildren())
-                preorder(children);            
+            for(auto child : parent->getChildren())
+                get_preorder(L,  DT , child );
         }
 
         bool isLoopInvariant(Instruction I , Loop *L) {
@@ -144,13 +166,12 @@ namespace {
             LoopInfoWrapperPass *LIWP = getAnalysisIfAvailable<LoopInfoWrapperPass>();
             LoopInfo *LI = LIWP ? &LIWP->getLoopInfo() : nullptr;
 
-            //DomTreeNodeBase<BasicBlock> *root = DT->getRootNode();
-            BasicBlock* PreHeader = L->getLoopPreheader();
+            DomTreeNodeBase<BasicBlock> *root = DT->getRootNode();
 
             errs() << "!!!!!!!!DT: " << root->getNumChildren() << "\n"
                    << "!!!!!!!!LI: " << LI->empty() << "\n";
             
-            get_preorder( root , nullptr );
+            get_preorder(L,  DT , root );
         
 /*----------------------------DEPTH--------------------------------*/
 
