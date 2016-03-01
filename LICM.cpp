@@ -73,8 +73,39 @@ namespace {
             return tmp;
         }
 
-        bool isLoopInvariant(Instruction I, Loop *L);
-        bool safeToHoist(Instruction I , Loop *L , DominatorTree *DT); 
+        bool isLoopInvariant(Instruction &I , Loop *L) {
+
+            errs() << " Michael Happy Birthday !" << "\n" ;
+            bool case1 = ( I.isBinaryOp() || I.isShift() ||
+                           I.isCast() || I.getOpcode() == Instruction::Select ||
+                           I.getOpcode() == Instruction::GetElementPtr );
+
+            bool case2 = L->hasLoopInvariantOperands(&I);
+
+            return case1 && case2;
+        }
+
+        bool safeToHoist(Instruction &I , Loop *L , DominatorTree *DT) {
+            unsigned int i = 0;
+            
+            errs() << " Michael Happy Birthday2 !" << "\n" ;
+            bool case1 = llvm::isSafeToSpeculativelyExecute(&I);
+            if (case1)
+                return true;
+
+            bool case2 = true;
+            SmallVector<BasicBlock*, 0> ExitBlocks;
+            L->getExitBlocks(ExitBlocks);
+            for ( i = 0 ; i < ExitBlocks.size() ; i ++) {
+                if (! DT->dominates(&I, ExitBlocks[i])) {
+                    case2 = false;
+                    break;
+                }
+            }
+            
+            return case2; 
+        }
+
         void get_preorder(Loop* L, DominatorTree *DT,DomTreeNodeBase< BasicBlock > * parent)
         {
             // DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
@@ -105,7 +136,7 @@ namespace {
             
             if(immediateBB){
                 for(auto & I : parent_BB->getInstList()){
-                    if(isLoopInvariant(I, L) && safeToHoist(I, L, DT))   {
+                    if(isLoopInvariant(I, L) && safeToHoist(I, L, DT))  
                     {
                         I.removeFromParent();
                         
@@ -118,39 +149,6 @@ namespace {
 
             for(auto child : parent->getChildren())
                 get_preorder(L,  DT , child );
-        }
-
-        bool isLoopInvariant(Instruction I , Loop *L) {
-
-            errs() << " Michael Happy Birthday !" << "\n" ;
-            bool case1 = ( I.isBinaryOp() || I.isShift() ||
-                           I.isCast() || I.getOpcode() == Instruction::Select ||
-                           I.getOpcode() == Instruction::GetElementPtr );
-
-            bool case2 = L->hasLoopInvariantOperands(&I);
-
-            return case1 && case2;
-        }
-
-        bool safeToHoist(Instruction I , Loop *L , DominatorTree *DT) {
-            unsigned int i = 0;
-            
-            errs() << " Michael Happy Birthday2 !" << "\n" ;
-            bool case1 = llvm::isSafeToSpeculativelyExecute(&I);
-            if (case1)
-                return true;
-
-            bool case2 = true;
-            SmallVector<BasicBlock*, 0> ExitBlocks;
-            L->getExitBlocks(ExitBlocks);
-            for ( i = 0 ; i < ExitBlocks.size() ; i ++) {
-                if (! DT->dominates(&I, ExitBlocks[i])) {
-                    case2 = false;
-                    break;
-                }
-            }
-            
-            return case2; 
         }
 
         bool runOnLoop(Loop *L, LPPassManager &LPM) override {
