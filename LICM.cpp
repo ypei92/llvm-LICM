@@ -102,7 +102,7 @@ namespace {
             
             if(immediateBB){
                 for(auto & I : parent_BB->getInstList()){
-                    if(1)//isLoopInvariant(I, L) && safeToHoist(I, L))   {
+                    if(1)//isLoopInvariant(I, L) && safeToHoist(I, L, DT))   {
                     {
                         I.removeFromParent();
                         
