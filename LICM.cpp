@@ -71,13 +71,15 @@ namespace {
             LoopNode tmp(BBs,instrs,atomics,branches);
             return tmp;
         }
-        void get_preorder(DorminatorTree *DT,DomTreeNrdeBase< BasicBlock > * parent)
+
+        void get_preorder(DorminatorTree *DT,DomTreeNodeBase< BasicBlock > * parent)
         {
             DomTreeNodeBase< BasicBlock > * root = DT->getRootNode();
             BasicBlock* root_BB = root->getBlock();
             BasicBlock* parent_BB = parent.getBlock();
-            if(!DT->domimates(root_BB, parent_BB) return;
-            
+            if(!DT->dominates(root_BB, parent_BB) return;
+
+            /* 
             bool immediateBB = true;
 
             
@@ -87,14 +89,14 @@ namespace {
                         move I to pre-header basic block;
                 }
             }
-
-
+            */
 
             for(auto children : parent->getChildren())
                 preorder(children);            
         }
+
         bool runOnLoop(Loop *L, LPPassManager &LPM) override {
-            return NodeList;
+            // return NodeList;
 
             Loop *tmpLoop;
             unsigned int i = 0;
@@ -108,13 +110,14 @@ namespace {
             DominatorTree *DT = DTWP ? &DTWP->getDomTree() : nullptr;
             LoopInfoWrapperPass *LIWP = getAnalysisIfAvailable<LoopInfoWrapperPass>();
             LoopInfo *LI = LIWP ? &LIWP->getLoopInfo() : nullptr;
-            errs() << "!!!!!!!!DT: " << DT->compare(*DT) << "\n"
+
+            //DomTreeNodeBase<BasicBlock> *root = DT->getRootNode();
+            BasicBlock* PreHeader = L->getLoopPreheader();
+
+            errs() << "!!!!!!!!DT: " << root->getNumChildren() << "\n"
                    << "!!!!!!!!LI: " << LI->empty() << "\n";
-
             
-            BasicBlock* Header = L->getHeader();
-
-            get_preorder(root);
+            get_preorder( root , nullptr );
         
 /*----------------------------DEPTH--------------------------------*/
 

@@ -2,8 +2,10 @@
 #include <stdlib.h>
 
 int main(int argc, char* argv[]) {
-    int a = atoi(argv[1]);
-    int b = atoi(argv[2]);
+    // int a = atoi(argv[1]);
+    // int b = atoi(argv[2]);
+    int a = 2;
+    int b = 3;
     int i = 1;
 
     int c = 0;
@@ -11,6 +13,11 @@ int main(int argc, char* argv[]) {
         c += a + b;
         i ++;
     }
-
+    /*
+    do {
+        c += a + b;
+        i ++;
+    }while ( i < 3 );
+    */
     return 0;
 }
