@@ -10,9 +10,10 @@ int main(int argc, char* argv[]) {
 
     int c = 0;
     while ( i < 3 ) {
-        c += a + b;
+        c = a + b;
         i ++;
     }
+    printf("%d\n",c);
     /*
     do {
         c += a + b;
